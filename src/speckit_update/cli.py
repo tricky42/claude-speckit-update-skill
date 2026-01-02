@@ -5,7 +5,6 @@ the speckit-update command.
 """
 
 import argparse
-import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -64,7 +63,8 @@ def create_parser() -> argparse.ArgumentParser:
         version=f"speckit-update {__version__}",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Enable verbose output",
     )
@@ -281,9 +281,10 @@ def _show_version_suggestions(client: GitHubClient, requested_version: str) -> N
 
             # Find similar versions (fuzzy match)
             similar = [
-                r.tag_name for r in releases
+                r.tag_name
+                for r in releases
                 if requested_version.lstrip("v") in r.tag_name
-                   or r.tag_name.lstrip("v").startswith(requested_version.lstrip("v")[:5])
+                or r.tag_name.lstrip("v").startswith(requested_version.lstrip("v")[:5])
             ]
             if similar:
                 console.print()
@@ -374,7 +375,7 @@ def run_update(
 
         if not proceed:
             if not confirm_update(plan):
-                raise UserCancelledError()
+                raise UserCancelledError("Update cancelled by user")
         else:
             info("Proceeding with update (--proceed flag)")
 
@@ -416,10 +417,14 @@ def run_update(
 
                 # Get all three versions
                 current_path = project_root / file_path
-                current_content = current_path.read_text() if current_path.exists() else ""
+                current_content = (
+                    current_path.read_text() if current_path.exists() else ""
+                )
 
                 incoming_bytes = extractor.get_file_content(file_path)
-                incoming_content = incoming_bytes.decode("utf-8") if incoming_bytes else ""
+                incoming_content = (
+                    incoming_bytes.decode("utf-8") if incoming_bytes else ""
+                )
 
                 # Get base content from manifest
                 tracked = next(
@@ -444,12 +449,11 @@ def run_update(
                     )
                 else:
                     # For non-markdown files, use simple conflict markers
-                    result = ConflictResult(
-                        merged_content=_create_conflict_markers(
+                    result = ConflictResult.with_conflicts(
+                        content=_create_conflict_markers(
                             current_content, incoming_content, current_version, target
                         ),
-                        has_conflicts=True,
-                        conflict_count=1,
+                        markers=[(1, 10)],  # Approximate marker range
                     )
 
                 # Write merged content
@@ -531,7 +535,8 @@ def run_update(
                 if original_manifest:
                     # Remove the failed backup from history
                     original_manifest.backup_history = [
-                        b for b in original_manifest.backup_history
+                        b
+                        for b in original_manifest.backup_history
                         if b.path != backup.path
                     ]
                     manifest_manager.save(original_manifest)
@@ -611,7 +616,7 @@ def run_rollback(project_root: Path) -> int:
 
     # Confirm with user
     if not confirm_rollback():
-        raise UserCancelledError()
+        raise UserCancelledError("Rollback cancelled by user")
 
     # Perform rollback
     try:
@@ -624,8 +629,7 @@ def run_rollback(project_root: Path) -> int:
 
         # Remove this backup from history (it's been consumed)
         manifest.backup_history = [
-            b for b in manifest.backup_history
-            if b.path != latest_backup.path
+            b for b in manifest.backup_history if b.path != latest_backup.path
         ]
 
         manifest_manager.save(manifest)

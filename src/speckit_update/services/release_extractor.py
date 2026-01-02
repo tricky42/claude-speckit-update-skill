@@ -13,7 +13,6 @@ from speckit_update.models import Release
 from speckit_update.services.github_client import GitHubClient
 from speckit_update.services.hash_utils import calculate_hash
 
-
 # Official SpecKit files to track (relative paths in the repo)
 SPECKIT_FILES = (
     ".claude/commands/speckit.analyze.md",

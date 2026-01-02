@@ -154,7 +154,7 @@ class BackupManager:
         )
 
         # Identify backups to remove
-        backups_to_remove = sorted_backups[self.MAX_BACKUPS:]
+        backups_to_remove = sorted_backups[self.MAX_BACKUPS :]
         removed_paths: list[str] = []
 
         for backup in backups_to_remove:

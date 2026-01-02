@@ -132,7 +132,9 @@ class GitHubClient:
                     time.sleep(RETRY_DELAYS[attempt])
                     continue
 
-        raise NetworkError(f"GitHub API request failed after {MAX_RETRIES} retries: {last_error}")
+        raise NetworkError(
+            f"GitHub API request failed after {MAX_RETRIES} retries: {last_error}"
+        )
 
     def get_latest_release(self) -> Release:
         """Fetch the latest SpecKit release.

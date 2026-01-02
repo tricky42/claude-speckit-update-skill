@@ -6,8 +6,8 @@ granular conflict markers only where necessary.
 """
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from speckit_update.models import ConflictResult
 
@@ -85,18 +85,22 @@ class MarkdownMerger:
             if header_match:
                 # Save previous section if exists
                 if current_header:
-                    sections.append(Section(
-                        header=current_header,
-                        level=current_level,
-                        content="\n".join(current_content_lines).strip(),
-                    ))
+                    sections.append(
+                        Section(
+                            header=current_header,
+                            level=current_level,
+                            content="\n".join(current_content_lines).strip(),
+                        )
+                    )
                 elif in_preamble and preamble_lines:
                     # Save preamble as level 0 section
-                    sections.append(Section(
-                        header="",
-                        level=0,
-                        content="\n".join(preamble_lines).strip(),
-                    ))
+                    sections.append(
+                        Section(
+                            header="",
+                            level=0,
+                            content="\n".join(preamble_lines).strip(),
+                        )
+                    )
 
                 in_preamble = False
                 current_header = line
@@ -110,17 +114,21 @@ class MarkdownMerger:
 
         # Don't forget the last section
         if current_header:
-            sections.append(Section(
-                header=current_header,
-                level=current_level,
-                content="\n".join(current_content_lines).strip(),
-            ))
+            sections.append(
+                Section(
+                    header=current_header,
+                    level=current_level,
+                    content="\n".join(current_content_lines).strip(),
+                )
+            )
         elif preamble_lines:
-            sections.append(Section(
-                header="",
-                level=0,
-                content="\n".join(preamble_lines).strip(),
-            ))
+            sections.append(
+                Section(
+                    header="",
+                    level=0,
+                    content="\n".join(preamble_lines).strip(),
+                )
+            )
 
         return sections
 
@@ -140,7 +148,7 @@ class MarkdownMerger:
         if len(s2) == 0:
             return len(s1)
 
-        previous_row = range(len(s2) + 1)
+        previous_row: list[int] = list(range(len(s2) + 1))
         for i, c1 in enumerate(s1):
             current_row = [i + 1]
             for j, c2 in enumerate(s2):
@@ -205,7 +213,7 @@ class MarkdownMerger:
         current: str,
         incoming: str,
         *,
-        base_version: str = "base",
+        base_version: str = "base",  # noqa: ARG002
         current_version: str = "current",
         incoming_version: str = "incoming",
     ) -> ConflictResult:
@@ -235,7 +243,9 @@ class MarkdownMerger:
         for incoming_section in incoming_sections:
             # Find matching sections in base and current
             base_match = self._find_matching_section(incoming_section, base_sections)
-            current_match = self._find_matching_section(incoming_section, current_sections)
+            current_match = self._find_matching_section(
+                incoming_section, current_sections
+            )
 
             section_text: str
             has_conflict = False
@@ -247,7 +257,10 @@ class MarkdownMerger:
             elif base_match is None:
                 # Section exists in current but not base, and also in incoming
                 # Current added it, incoming added it - potential conflict
-                if current_match and current_match.full_text != incoming_section.full_text:
+                if (
+                    current_match
+                    and current_match.full_text != incoming_section.full_text
+                ):
                     section_text, has_conflict = self._create_conflict_marker(
                         current_match.full_text,
                         incoming_section.full_text,
@@ -302,14 +315,20 @@ class MarkdownMerger:
             if has_conflict:
                 # Track conflict marker positions
                 lines_in_section = section_text.count("\n") + 1
-                conflict_markers.append((current_line, current_line + lines_in_section - 1))
+                conflict_markers.append(
+                    (current_line, current_line + lines_in_section - 1)
+                )
 
             merged_parts.append(section_text)
-            current_line += section_text.count("\n") + 2  # +1 for section, +1 for blank line
+            current_line += (
+                section_text.count("\n") + 2
+            )  # +1 for section, +1 for blank line
 
         # Check for sections in current that aren't in incoming (user additions)
         for current_section in current_sections:
-            incoming_match = self._find_matching_section(current_section, incoming_sections)
+            incoming_match = self._find_matching_section(
+                current_section, incoming_sections
+            )
             base_match = self._find_matching_section(current_section, base_sections)
 
             if incoming_match is None and base_match is None:

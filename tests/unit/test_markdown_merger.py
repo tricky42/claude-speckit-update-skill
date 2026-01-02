@@ -1,7 +1,5 @@
 """Tests for markdown merger."""
 
-import pytest
-
 from speckit_update.services.markdown_merger import (
     MarkdownMerger,
     Section,

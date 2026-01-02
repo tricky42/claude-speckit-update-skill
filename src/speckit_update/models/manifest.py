@@ -119,7 +119,6 @@ class Manifest:
 
     def to_dict(self) -> ManifestDict:
         """Convert to JSON-serializable dict."""
-        from speckit_update.models.backup import BackupEntry
 
         return ManifestDict(
             version=self.version,

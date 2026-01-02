@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from speckit_update.models import ConfidenceLevel
 from speckit_update.services.fingerprint_detector import (
     FingerprintDetector,

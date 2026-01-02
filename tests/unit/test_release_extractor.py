@@ -3,7 +3,7 @@
 import io
 import tarfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -188,7 +188,6 @@ class TestReleaseExtractor:
         self,
         mock_client: MagicMock,
         sample_release: Release,
-        tmp_path: Path,
     ) -> None:
         """Should reject tarballs with path traversal."""
         # Create malicious tarball with ../ path

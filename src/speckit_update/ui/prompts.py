@@ -33,7 +33,7 @@ def confirm_update(plan: UpdatePlan) -> bool:
 
     # Show summary
     console.print()
-    console.print(f"[bold]Update Summary:[/bold]")
+    console.print("[bold]Update Summary:[/bold]")
     console.print(f"  Version: {plan.from_version} → {plan.to_version}")
     console.print(f"  Files affected: {plan.total_files_affected}")
 

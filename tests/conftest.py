@@ -9,10 +9,6 @@ import pytest
 from speckit_update.models import (
     BackupEntry,
     ConfidenceLevel,
-    ConflictResult,
-    FileAnalysis,
-    FileState,
-    Fingerprint,
     FingerprintMatch,
     Manifest,
     Release,

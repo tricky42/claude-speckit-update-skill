@@ -99,4 +99,6 @@ def print_version_info(current: str, target: str) -> None:
     if current == target:
         console.print(f"[green]Up to date:[/green] {current}")
     else:
-        console.print(f"[cyan]Current:[/cyan] {current} → [green]Target:[/green] {target}")
+        console.print(
+            f"[cyan]Current:[/cyan] {current} → [green]Target:[/green] {target}"
+        )

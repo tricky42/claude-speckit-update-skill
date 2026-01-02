@@ -95,8 +95,7 @@ class TestConflictDetector:
         upstream_hashes = {"unchanged.md": "sha256:" + "c" * 64}
         detector = ConflictDetector(tmp_project, manifest_with_files, upstream_hashes)
 
-        # Mock the hash to match manifest
-        original_hash = manifest_with_files.tracked_files[0].original_hash
+        # Analyze the file
         analysis = detector.analyze_file("unchanged.md")
 
         # Since file exists and hash differs from upstream, it's UPDATE

@@ -6,9 +6,8 @@ file hashes against a database of known version signatures.
 
 import json
 from pathlib import Path
-from typing import Any
 
-from speckit_update.models import ConfidenceLevel, Fingerprint, FingerprintMatch
+from speckit_update.models import Fingerprint, FingerprintMatch
 from speckit_update.services.hash_utils import calculate_file_hash
 
 
@@ -109,7 +108,10 @@ class FingerprintDetector:
             for sig_file in self.SIGNATURE_FILES:
                 if sig_file in fingerprint.file_hashes:
                     total += 1
-                    if current_hashes.get(sig_file) == fingerprint.file_hashes[sig_file]:
+                    if (
+                        current_hashes.get(sig_file)
+                        == fingerprint.file_hashes[sig_file]
+                    ):
                         matches += 1
 
             if total > 0:

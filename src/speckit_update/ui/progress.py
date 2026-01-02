@@ -19,7 +19,7 @@ from speckit_update.ui.console import console
 
 
 @contextmanager
-def spinner(description: str) -> Generator[None, None, None]:
+def spinner(description: str) -> Generator[None]:
     """Show a spinner for indeterminate operations.
 
     Args:
@@ -42,7 +42,7 @@ def spinner(description: str) -> Generator[None, None, None]:
 def progress_bar(
     description: str,
     total: int,
-) -> Generator[Progress, None, None]:
+) -> Generator[Progress]:
     """Show a progress bar for determinate operations.
 
     Args:
@@ -79,30 +79,31 @@ def download_with_progress(
     Returns:
         Downloaded content as bytes.
     """
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        DownloadColumn(),
-        TransferSpeedColumn(),
-        console=console,
-        transient=True,
-    ) as progress:
-        # Start request
-        with client.stream("GET", url) as response:
-            response.raise_for_status()
+    with (
+        Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            console=console,
+            transient=True,
+        ) as progress,
+        client.stream("GET", url) as response,
+    ):
+        response.raise_for_status()
 
-            # Get content length if available
-            total = int(response.headers.get("content-length", 0))
-            task = progress.add_task(description, total=total or None)
+        # Get content length if available
+        total = int(response.headers.get("content-length", 0))
+        task = progress.add_task(description, total=total or None)
 
-            # Download with progress
-            chunks: list[bytes] = []
-            for chunk in response.iter_bytes():
-                chunks.append(chunk)
-                progress.update(task, advance=len(chunk))
+        # Download with progress
+        chunks: list[bytes] = []
+        for chunk in response.iter_bytes():
+            chunks.append(chunk)
+            progress.update(task, advance=len(chunk))
 
-            return b"".join(chunks)
+        return b"".join(chunks)
 
 
 class OperationProgress:

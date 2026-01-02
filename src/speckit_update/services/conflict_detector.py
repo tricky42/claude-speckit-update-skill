@@ -10,7 +10,6 @@ from speckit_update.models import (
     FileAnalysis,
     FileState,
     Manifest,
-    Release,
     TrackedFile,
     UpdatePlan,
 )

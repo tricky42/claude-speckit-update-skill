@@ -6,7 +6,6 @@ that tracks SpecKit installation state.
 
 import json
 from pathlib import Path
-from typing import Any
 
 from speckit_update.exceptions import ManifestError
 from speckit_update.models import Manifest, ManifestDict

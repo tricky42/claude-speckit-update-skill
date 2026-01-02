@@ -5,7 +5,6 @@ from rich.table import Table
 from speckit_update.models import FileState, UpdatePlan
 from speckit_update.ui.console import console
 
-
 # Color mapping for file states
 STATE_COLORS = {
     FileState.ADD: "green",

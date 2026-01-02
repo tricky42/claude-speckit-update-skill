@@ -10,7 +10,6 @@ from speckit_update.models import BackupEntry, Manifest, TrackedFile
 from speckit_update.services.backup_manager import (
     BackupManager,
     create_backup,
-    restore_latest_backup,
 )
 
 
@@ -139,12 +138,14 @@ class TestBackupManager:
             backup_path.mkdir(parents=True)
             (backup_path / "test.txt").write_text(f"backup {i}")
 
-            backups.append(BackupEntry(
-                timestamp=datetime(2026, 1, i + 1),
-                path=f".specify/backups/backup_{i}",
-                from_version=f"v0.0.{78 + i}",
-                to_version=f"v0.0.{79 + i}",
-            ))
+            backups.append(
+                BackupEntry(
+                    timestamp=datetime(2026, 1, i + 1),
+                    path=f".specify/backups/backup_{i}",
+                    from_version=f"v0.0.{78 + i}",
+                    to_version=f"v0.0.{79 + i}",
+                )
+            )
 
         manifest = Manifest(backup_history=backups)
         manager = BackupManager(tmp_project)

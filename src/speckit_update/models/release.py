@@ -45,9 +45,7 @@ class Release:
 
         # Parse ISO 8601 datetime from GitHub
         # GitHub format: "2024-01-15T10:30:00Z"
-        published_at = datetime.fromisoformat(
-            published_at_str.replace("Z", "+00:00")
-        )
+        published_at = datetime.fromisoformat(published_at_str.replace("Z", "+00:00"))
 
         return cls(
             tag_name=tag_name,

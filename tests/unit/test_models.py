@@ -165,7 +165,12 @@ class TestFileAnalysis:
 
     def test_requires_action(self) -> None:
         """Should require action for non-skip/preserve states."""
-        for state in [FileState.ADD, FileState.UPDATE, FileState.MERGE, FileState.REMOVE]:
+        for state in [
+            FileState.ADD,
+            FileState.UPDATE,
+            FileState.MERGE,
+            FileState.REMOVE,
+        ]:
             analysis = FileAnalysis(
                 path="test.md",
                 state=state,
