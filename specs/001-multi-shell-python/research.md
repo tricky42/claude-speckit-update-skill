@@ -23,18 +23,33 @@
 
 ### 2. HTTP Client Choice
 
-**Decision**: Use `requests` library for HTTP
+**Decision**: Use `httpx` for HTTP
 
 **Rationale**:
-- Battle-tested, stable API
-- Excellent error handling
-- Simple retry logic with urllib3
-- Well-documented
-- Only external dependency needed
+- Modern, type-safe HTTP client
+- Full type annotations for mypy strict mode
+- Sync and async support (using sync for this project)
+- Better timeout handling than requests
+- `requests`-compatible API for easy migration
+- Active development and excellent documentation
+
+**Implementation**:
+```python
+import httpx
+
+def get_latest_release() -> Release:
+    with httpx.Client(timeout=30.0) as client:
+        response = client.get(
+            "https://api.github.com/repos/github/spec-kit/releases/latest",
+            headers={"Accept": "application/vnd.github.v3+json"},
+        )
+        response.raise_for_status()
+        return Release.from_dict(response.json())
+```
 
 **Alternatives Considered**:
+- `requests`: Battle-tested but incomplete type stubs, aging API
 - `urllib.request` (stdlib): Works but verbose, poor ergonomics
-- `httpx`: Modern but adds dependency complexity, async not needed
 - `aiohttp`: Async not required for this use case
 
 ### 3. Cross-Platform Path Handling
@@ -196,24 +211,26 @@ speckit-update [--check-only] [--version VERSION] [--rollback] [--proceed] [--ve
 
 ### 9. Logging Strategy
 
-**Decision**: Use `logging` module with custom formatter
+**Decision**: Use `logging` module integrated with Rich
 
 **Rationale**:
-- Stdlib logging is sufficient
-- `--verbose` maps to DEBUG level
-- Normal output via print() to stdout
-- Errors via logging to stderr
+- Stdlib logging for structured logging
+- Rich's `RichHandler` for beautiful console output
+- `--verbose` maps to DEBUG level with detailed output
+- Automatic syntax highlighting for tracebacks
 
 **Implementation**:
 ```python
 import logging
+from rich.logging import RichHandler
 
 def setup_logging(verbose: bool) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     logging.basicConfig(
         level=level,
-        format='%(levelname)s: %(message)s',
-        stream=sys.stderr
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[RichHandler(rich_tracebacks=True)],
     )
 ```
 
@@ -237,6 +254,166 @@ def load_fingerprints() -> dict:
     data_file = files('speckit_update.data').joinpath('speckit-fingerprints.json')
     return json.loads(data_file.read_text())
 ```
+
+### 11. Package Manager Choice
+
+**Decision**: Use `uv` for package management
+
+**Rationale**:
+- 10-100x faster than pip for installs and resolves
+- Written in Rust, single binary, no Python bootstrap needed
+- Drop-in replacement for pip, pip-tools, virtualenv
+- Excellent lockfile support (`uv.lock`)
+- Built-in Python version management
+- Growing ecosystem adoption (Astral, same team as Ruff)
+
+**Project Setup**:
+```bash
+# Initialize project
+uv init speckit-update
+cd speckit-update
+
+# Add dependencies
+uv add httpx rich
+uv add --dev pytest pytest-cov mypy ruff
+
+# Run commands
+uv run speckit-update --check-only
+uv run pytest
+uv run mypy src/
+```
+
+**pyproject.toml structure**:
+```toml
+[project]
+name = "speckit-update"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "httpx>=0.27",
+    "rich>=13.0",
+]
+
+[project.scripts]
+speckit-update = "speckit_update.cli:main"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.8",
+    "ruff>=0.3",
+]
+```
+
+**Alternatives Considered**:
+- pip + venv: Standard but slow, no lockfile
+- poetry: Good but slower, heavier
+- pdm: Modern but less adoption than uv
+- hatch: Good for publishing but uv faster for development
+
+### 12. Terminal UI Library
+
+**Decision**: Use `Rich` for all terminal output
+
+**Rationale**:
+- Beautiful, modern terminal output with zero configuration
+- Tables, progress bars, syntax highlighting, panels
+- Markdown rendering in terminal
+- Full type annotations for mypy
+- Cross-platform (Windows, macOS, Linux)
+- Active maintenance by Will McGugan
+
+**Key Rich Components Used**:
+
+```python
+from rich.console import Console
+from rich.table import Table
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.panel import Panel
+from rich.syntax import Syntax
+from rich.markdown import Markdown
+
+console = Console()
+
+# Update plan table
+def show_update_plan(plan: UpdatePlan) -> None:
+    table = Table(title="Update Plan", show_header=True)
+    table.add_column("File", style="cyan", no_wrap=True)
+    table.add_column("Status", style="magenta")
+    table.add_column("Action", style="green")
+
+    for file in plan.files_to_add:
+        table.add_row(file, "New", "[green]Add[/green]")
+    for file in plan.files_to_update:
+        table.add_row(file, "Changed", "[yellow]Update[/yellow]")
+    for file in plan.files_to_merge:
+        table.add_row(file, "Conflict", "[red]Merge[/red]")
+
+    console.print(table)
+
+# Progress for downloads
+def download_with_progress(url: str) -> bytes:
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        task = progress.add_task("Downloading...", total=None)
+        # ... download logic
+    return data
+
+# Status messages
+console.print("[green]✓[/green] Update complete!")
+console.print(Panel("Conflicts require manual resolution", title="Warning", style="yellow"))
+```
+
+**Alternatives Considered**:
+- Plain print(): Works but ugly, no colors
+- colorama: Colors only, no tables/progress
+- click.echo(): Tied to Click framework
+- textual: TUI apps (overkill for CLI output)
+
+### 13. Linting and Formatting
+
+**Decision**: Use `ruff` for both linting and formatting
+
+**Rationale**:
+- 10-100x faster than flake8 + black + isort combined
+- Single tool replaces multiple tools
+- Written in Rust, excellent performance
+- Full compatibility with Black formatting
+- Includes import sorting (isort replacement)
+- Active development, growing rule set
+
+**Configuration in pyproject.toml**:
+```toml
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+```
+
+**Alternatives Considered**:
+- black + isort + flake8: Traditional but slow, multiple configs
+- pylint: Comprehensive but slow, noisy
+- pyright: Type checker only (using mypy)
 
 ## Resolved Clarifications
 

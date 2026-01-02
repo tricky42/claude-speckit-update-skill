@@ -13,6 +13,7 @@
 - Q: How should GitHub authentication tokens be stored and accessed securely? → A: Environment variable only (`GITHUB_TOKEN` or `GITHUB_PAT`)
 - Q: What is the backward compatibility strategy for Windows PowerShell users? → A: Python fully replaces PowerShell; SKILL.md updated to invoke Python instead (users interact via `/speckit-update` command, not direct script calls)
 - Q: How should cross-platform path case sensitivity be handled? → A: Case-preserving but case-insensitive comparison (consistent behavior across all platforms)
+- Q: What package manager and tooling should be used? → A: Use `uv` for package management, `Rich` for beautiful CLI output, `httpx` for HTTP client, and modern Python tooling (ruff, mypy)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -142,6 +143,7 @@ Existing users on any platform should experience no change in their workflow whe
 - **FR-013**: System MUST fully replace PowerShell implementation; SKILL.md updated to invoke Python (no PowerShell wrapper or dual implementation)
 - **FR-014**: System MUST use modern Python typing throughout (TypedDict, dataclasses, Literal, Protocol)
 - **FR-015**: System MUST provide verbose logging mode for debugging (`--verbose`)
+- **FR-016**: System MUST use Rich library for beautiful CLI output including progress bars, tables, syntax highlighting, and colored status messages
 
 ### Non-Functional Requirements
 
@@ -150,7 +152,7 @@ Existing users on any platform should experience no change in their workflow whe
 - **NFR-003**: System MUST have 100% type coverage verifiable with mypy/pyright in strict mode
 - **NFR-004**: System MUST have >= 90% test coverage with pytest
 - **NFR-005**: System MUST work offline for operations not requiring GitHub API
-- **NFR-006**: System MUST produce zero dependencies beyond Python standard library (except requests for HTTP)
+- **NFR-006**: System MUST use modern Python tooling: `uv` for package management, `httpx` for HTTP, `Rich` for CLI output, `ruff` for linting, `mypy` for type checking
 
 ### Key Entities
 
@@ -185,9 +187,8 @@ Existing users on any platform should experience no change in their workflow whe
 
 ## Out of Scope
 
-- GUI interface (CLI only)
-- Automatic installation of Python
+- GUI interface (CLI only, though Rich provides beautiful terminal UI)
+- Automatic installation of Python or uv
 - Support for Python versions below 3.14
-- Integration with package managers (pip/conda distribution)
 - Real-time sync with GitHub (polling-based updates only)
 - Multi-project batch updates

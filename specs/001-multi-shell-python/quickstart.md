@@ -6,14 +6,30 @@
 ## Prerequisites
 
 - Python 3.14 or higher
-- pip (comes with Python)
+- `uv` package manager (install from https://docs.astral.sh/uv/)
 - Git
 
-### Verify Python Version
+### Install uv
 
 ```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Or with pip (if you have Python already)
+pip install uv
+```
+
+### Verify Installation
+
+```bash
+uv --version
+# Should output: uv 0.x.x or higher
+
 python --version
-# Should output: Python 3.14.x or higher
+# Should output: Python 3.14.x or higher (uv can install this for you)
 ```
 
 ## Project Setup
@@ -24,29 +40,35 @@ python --version
 cd claude-speckit-update-skill
 ```
 
-### 2. Create Virtual Environment
+### 2. Install Dependencies with uv
 
 ```bash
-python -m venv .venv
+# uv automatically creates virtual environment and installs dependencies
+uv sync
 
-# Activate (Linux/macOS)
-source .venv/bin/activate
-
-# Activate (Windows)
-.venv\Scripts\activate
-```
-
-### 3. Install in Development Mode
-
-```bash
-pip install -e ".[dev]"
+# Or install with dev dependencies
+uv sync --dev
 ```
 
 This installs:
-- The `speckit_update` package in editable mode
-- `requests` for HTTP
-- `pytest` and `pytest-cov` for testing
-- `mypy` for type checking
+- `httpx` for HTTP requests
+- `rich` for beautiful terminal output
+- `pytest` and `pytest-cov` for testing (dev)
+- `mypy` for type checking (dev)
+- `ruff` for linting and formatting (dev)
+
+### 3. Verify Setup
+
+```bash
+# Run the CLI
+uv run speckit-update --help
+
+# Run tests
+uv run pytest
+
+# Type check
+uv run mypy src/
+```
 
 ## Development Commands
 
@@ -54,84 +76,127 @@ This installs:
 
 ```bash
 # Check for updates
-python -m speckit_update --check-only
+uv run speckit-update --check-only
 
 # Update with confirmation
-python -m speckit_update --proceed
+uv run speckit-update --proceed
 
 # Target specific version
-python -m speckit_update --version v0.0.79
+uv run speckit-update --version v0.0.79
 
 # Rollback last update
-python -m speckit_update --rollback
+uv run speckit-update --rollback
 
 # Verbose logging
-python -m speckit_update --check-only --verbose
+uv run speckit-update --check-only --verbose
 ```
 
 ### Run Tests
 
 ```bash
 # All tests
-pytest
+uv run pytest
 
 # With coverage
-pytest --cov=speckit_update --cov-report=term-missing
+uv run pytest --cov=speckit_update --cov-report=term-missing
 
 # Unit tests only
-pytest tests/unit/
+uv run pytest tests/unit/
 
 # Integration tests only
-pytest tests/integration/
+uv run pytest tests/integration/
 
 # Specific test file
-pytest tests/unit/test_hash_utils.py
+uv run pytest tests/unit/test_hash_utils.py
 
 # Specific test
-pytest tests/unit/test_hash_utils.py::test_normalize_crlf
+uv run pytest tests/unit/test_hash_utils.py::test_normalize_crlf
+
+# Watch mode (re-run on changes)
+uv run pytest-watch
 ```
 
 ### Type Checking
 
 ```bash
 # Run mypy in strict mode
-mypy src/speckit_update --strict
+uv run mypy src/speckit_update --strict
 
 # Run pyright (alternative)
-pyright src/speckit_update
+uv run pyright src/speckit_update
 ```
 
 ### Code Quality
 
 ```bash
-# Format with black
-black src/ tests/
+# Check with ruff (fast!)
+uv run ruff check src/ tests/
 
-# Sort imports
-isort src/ tests/
+# Fix auto-fixable issues
+uv run ruff check --fix src/ tests/
 
-# Lint with ruff
-ruff check src/ tests/
+# Format code
+uv run ruff format src/ tests/
+
+# Check formatting without changes
+uv run ruff format --check src/ tests/
+```
+
+### All Quality Checks (CI-style)
+
+```bash
+# Run all checks
+uv run ruff check src/ tests/ && \
+uv run ruff format --check src/ tests/ && \
+uv run mypy src/ --strict && \
+uv run pytest --cov=speckit_update
 ```
 
 ## Project Structure
 
 ```
+# Project root (uv-managed)
+pyproject.toml               # Project config, dependencies, tool settings
+uv.lock                      # Locked dependencies (committed to git)
+.python-version              # Python version for uv
+
 src/speckit_update/
-├── __init__.py           # Package init
-├── __main__.py           # Entry point for `python -m speckit_update`
-├── cli.py                # CLI argument parsing and orchestration
-├── models/               # Data structures
-│   ├── manifest.py       # Manifest, TrackedFile
-│   ├── file_state.py     # FileState enum
+├── __init__.py              # Package init
+├── __main__.py              # Entry point for `python -m speckit_update`
+├── cli.py                   # CLI argument parsing and orchestration
+├── models/                  # Data structures
+│   ├── manifest.py          # Manifest, TrackedFile
+│   ├── file_state.py        # FileState enum
 │   └── ...
-├── services/             # Business logic
-│   ├── hash_utils.py     # File hashing
-│   ├── github_client.py  # GitHub API
+├── services/                # Business logic
+│   ├── hash_utils.py        # File hashing
+│   ├── github_client.py     # GitHub API with httpx
 │   └── ...
-└── utils/                # Utilities
-    ├── paths.py          # Cross-platform paths
-    └── logging.py        # Logging setup
+├── ui/                      # Rich-based UI components
+│   ├── console.py           # Shared Rich console
+│   ├── tables.py            # Update plan tables
+│   ├── progress.py          # Progress bars
+│   └── prompts.py           # Styled prompts
+└── utils/                   # Utilities
+    ├── paths.py             # Cross-platform paths
+    └── logging.py           # Rich-integrated logging
+```
+
+## Adding Dependencies
+
+```bash
+# Add runtime dependency
+uv add httpx
+
+# Add dev dependency
+uv add --dev pytest-watch
+
+# Remove dependency
+uv remove some-package
+
+# Update all dependencies
+uv lock --upgrade
+uv sync
 ```
 
 ## Common Development Tasks
@@ -171,26 +236,30 @@ from .my_service import do_something
 __all__ = [..., "do_something"]
 ```
 
-### Adding a New Model
-
-1. Create or update file in `src/speckit_update/models/`:
+### Adding a Rich UI Component
 
 ```python
-# src/speckit_update/models/my_model.py
-from dataclasses import dataclass
+# src/speckit_update/ui/my_component.py
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
 
-@dataclass(frozen=True)
-class MyModel:
-    """Description of my model."""
-    field: str
-```
+console = Console()
 
-2. Export from `models/__init__.py`:
+def show_status(message: str, success: bool = True) -> None:
+    """Display a status message with appropriate styling."""
+    if success:
+        console.print(f"[green]✓[/green] {message}")
+    else:
+        console.print(f"[red]✗[/red] {message}")
 
-```python
-from .my_model import MyModel
-
-__all__ = [..., "MyModel"]
+def show_file_table(files: list[str], title: str) -> None:
+    """Display a table of files."""
+    table = Table(title=title)
+    table.add_column("File", style="cyan")
+    for file in files:
+        table.add_row(file)
+    console.print(table)
 ```
 
 ### Migrating a PowerShell Function
@@ -236,7 +305,7 @@ To verify Python produces identical results to PowerShell:
 pwsh -File scripts/generate_test_fixtures.ps1
 
 # Run compatibility tests
-pytest tests/compatibility/ -v
+uv run pytest tests/compatibility/ -v
 ```
 
 ## Environment Variables
@@ -246,6 +315,7 @@ pytest tests/compatibility/ -v
 | `GITHUB_TOKEN` | GitHub API token for higher rate limits | None |
 | `GITHUB_PAT` | Alternative name for GitHub token | None |
 | `SPECKIT_VERBOSE` | Enable verbose logging | `false` |
+| `NO_COLOR` | Disable Rich colors (for CI) | Not set |
 
 ## Debugging
 
@@ -253,18 +323,24 @@ pytest tests/compatibility/ -v
 
 ```python
 import logging
-logging.basicConfig(level=logging.DEBUG)
+from rich.logging import RichHandler
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    handlers=[RichHandler(rich_tracebacks=True)]
+)
 ```
 
 Or via CLI:
 ```bash
-python -m speckit_update --check-only --verbose
+uv run speckit-update --check-only --verbose
 ```
 
 ### Inspect Manifest
 
 ```python
 from speckit_update.services.manifest_manager import load_manifest
+from pathlib import Path
 
 manifest = load_manifest(Path(".specify/manifest.json"))
 print(f"Version: {manifest.speckit_version}")
@@ -282,20 +358,28 @@ hash_value = get_normalized_hash(content)
 print(hash_value)  # sha256:abc123...
 ```
 
+### Interactive REPL with Project Loaded
+
+```bash
+uv run python
+>>> from speckit_update.services import *
+>>> from speckit_update.models import *
+```
+
 ## Troubleshooting
 
 ### "Module not found" errors
 
-Ensure you've installed in development mode:
+Ensure dependencies are synced:
 ```bash
-pip install -e ".[dev]"
+uv sync --dev
 ```
 
 ### Type checking errors
 
 Make sure you're using Python 3.14+:
 ```bash
-python --version
+uv run python --version
 ```
 
 ### Tests failing on Windows
@@ -310,3 +394,14 @@ Check normalization order:
 3. Trailing whitespace strip
 4. UTF-8 encode
 5. SHA-256 hash
+
+### Rich output looks wrong
+
+Check terminal capabilities:
+```python
+from rich.console import Console
+console = Console()
+console.print(console.options)
+```
+
+For CI environments, set `NO_COLOR=1` to disable colors.

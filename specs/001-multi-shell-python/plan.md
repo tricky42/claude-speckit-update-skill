@@ -10,13 +10,20 @@ Rewrite the SpecKit Update Skill from PowerShell to modern Python (>= 3.14) with
 ## Technical Context
 
 **Language/Version**: Python 3.14+ (required for modern typing features: TypedDict, dataclasses, Literal, Protocol)
-**Primary Dependencies**: Standard library only + `requests` for HTTP (NFR-006)
+**Package Manager**: `uv` - fast, modern Python package manager written in Rust
+**Primary Dependencies**:
+- `httpx` - Modern async-capable HTTP client (replaces requests)
+- `rich` - Beautiful terminal output (tables, progress bars, syntax highlighting)
+**Dev Dependencies**:
+- `pytest` + `pytest-cov` - Testing with coverage
+- `mypy` - Static type checking (strict mode)
+- `ruff` - Fast linter and formatter (replaces black, isort, flake8)
 **Storage**: JSON files (manifest.json in `.specify/`), local file system for backups
 **Testing**: pytest with pytest-cov for coverage reporting (>= 90% target)
 **Target Platform**: Windows 10+, macOS 12+, Linux (Ubuntu 20.04+, Debian 11+, Fedora 36+)
-**Project Type**: Single CLI application
+**Project Type**: Single CLI application managed by `uv`
 **Performance Goals**: <2s check-only, <5s full update (excluding network)
-**Constraints**: Zero external dependencies beyond requests, offline-capable for non-network operations
+**Constraints**: Minimal curated dependencies, offline-capable for non-network operations
 **Scale/Scope**: Single-project updates, ~50 tracked files typical, ~5 backup retention
 
 ## Constitution Check
@@ -51,6 +58,12 @@ specs/001-multi-shell-python/
 ### Source Code (repository root)
 
 ```
+# Project root files (uv-managed)
+pyproject.toml               # Project config, dependencies, tool settings
+uv.lock                      # Locked dependencies (committed)
+py.typed                     # PEP 561 marker for type checking
+.python-version              # Python version for uv
+
 src/
 ├── speckit_update/
 │   ├── __init__.py
@@ -66,21 +79,24 @@ src/
 │   ├── services/
 │   │   ├── __init__.py
 │   │   ├── hash_utils.py     # Normalized hashing (replaces HashUtils.psm1)
-│   │   ├── github_client.py  # GitHub API (replaces GitHubApiClient.psm1)
+│   │   ├── github_client.py  # GitHub API with httpx (replaces GitHubApiClient.psm1)
 │   │   ├── manifest_manager.py   # CRUD ops (replaces ManifestManager.psm1)
 │   │   ├── backup_manager.py     # Backup/restore (replaces BackupManager.psm1)
 │   │   ├── conflict_detector.py  # File analysis (replaces ConflictDetector.psm1)
 │   │   ├── fingerprint_detector.py # Version detection (replaces FingerprintDetector.psm1)
 │   │   └── markdown_merger.py    # 3-way merge (replaces MarkdownMerger.psm1)
+│   ├── ui/                       # Rich-based UI components
+│   │   ├── __init__.py
+│   │   ├── console.py        # Shared Rich console instance
+│   │   ├── tables.py         # Update plan tables, file state tables
+│   │   ├── progress.py       # Progress bars for downloads, operations
+│   │   └── prompts.py        # Styled prompts and confirmations
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── paths.py          # Cross-platform path handling
-│   │   └── logging.py        # Verbose logging setup
+│   │   └── logging.py        # Rich-integrated logging setup
 │   └── data/
 │       └── speckit-fingerprints.json  # Bundled fingerprint database
-│
-├── py.typed                  # PEP 561 marker for type checking
-└── pyproject.toml           # Project configuration
 
 tests/
 ├── conftest.py              # Shared fixtures
@@ -91,7 +107,8 @@ tests/
 │   ├── test_backup_manager.py
 │   ├── test_conflict_detector.py
 │   ├── test_fingerprint_detector.py
-│   └── test_markdown_merger.py
+│   ├── test_markdown_merger.py
+│   └── test_ui_components.py    # Rich UI component tests
 ├── integration/
 │   └── test_update_workflow.py
 └── fixtures/
@@ -181,13 +198,52 @@ class RollbackError(SpecKitError):
     exit_code = 6
 ```
 
-### 4. SKILL.md Integration
+### 4. Rich UI Strategy
 
-Update SKILL.md to invoke Python:
+Use Rich for all terminal output:
+
+```python
+from rich.console import Console
+from rich.table import Table
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.panel import Panel
+from rich.syntax import Syntax
+
+console = Console()
+
+# Status messages
+console.print("[green]✓[/green] Update complete")
+console.print("[yellow]⚠[/yellow] Conflicts detected", style="bold")
+console.print("[red]✗[/red] Update failed", style="bold red")
+
+# Tables for update plans
+table = Table(title="Update Plan")
+table.add_column("File", style="cyan")
+table.add_column("Status", style="magenta")
+table.add_column("Action", style="green")
+
+# Progress bars for downloads
+with Progress(
+    SpinnerColumn(),
+    TextColumn("[progress.description]{task.description}"),
+    transient=True,
+) as progress:
+    task = progress.add_task("Downloading templates...", total=None)
+```
+
+### 5. SKILL.md Integration
+
+Update SKILL.md to invoke Python via uv:
 
 ```markdown
 ## Execution
-python -m speckit_update $ARGUMENTS
+uv run speckit-update $ARGUMENTS
+```
+
+Or if installed globally:
+```markdown
+## Execution
+speckit-update $ARGUMENTS
 ```
 
 ## Complexity Tracking
@@ -196,6 +252,8 @@ python -m speckit_update $ARGUMENTS
 
 | Aspect | Complexity | Justification |
 |--------|------------|---------------|
-| Module count | 7 services | Direct 1:1 mapping from PowerShell modules |
-| Dependencies | 1 external (requests) | Minimal; stdlib for everything else |
+| Module count | 7 services + 4 UI | Direct 1:1 mapping + Rich UI layer |
+| Dependencies | 2 runtime (httpx, rich) | Modern, well-maintained, type-safe |
+| Dev dependencies | 3 (pytest, mypy, ruff) | Standard modern Python tooling |
+| Package manager | uv | Fastest Python package manager, excellent DX |
 | Test migration | 193 → pytest | Same scenarios, different framework |
