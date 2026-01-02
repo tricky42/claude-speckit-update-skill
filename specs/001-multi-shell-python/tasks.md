@@ -18,13 +18,13 @@
 
 **Purpose**: Project initialization with uv package manager and modern Python tooling
 
-- [ ] T001 Create project structure per plan.md (`src/speckit_update/`, `tests/`)
-- [ ] T002 Initialize pyproject.toml with uv (Python 3.14+, httpx, rich dependencies)
-- [ ] T003 [P] Create `.python-version` file for uv (3.14)
-- [ ] T004 [P] Configure ruff in pyproject.toml (line-length=88, select E,W,F,I,B,C4,UP,ARG,SIM)
-- [ ] T005 [P] Configure mypy in pyproject.toml (strict mode)
-- [ ] T006 [P] Create py.typed marker file for PEP 561
-- [ ] T007 Run `uv sync --dev` to verify dependency resolution
+- [x] T001 Create project structure per plan.md (`src/speckit_update/`, `tests/`)
+- [x] T002 Initialize pyproject.toml with uv (Python 3.14+, httpx, rich dependencies)
+- [x] T003 [P] Create `.python-version` file for uv (3.14)
+- [x] T004 [P] Configure ruff in pyproject.toml (line-length=88, select E,W,F,I,B,C4,UP,ARG,SIM)
+- [x] T005 [P] Configure mypy in pyproject.toml (strict mode)
+- [x] T006 [P] Create py.typed marker file for PEP 561
+- [ ] T007 Run `uv sync --dev` to verify dependency resolution (skipped - uv not installed)
 
 ---
 
@@ -36,36 +36,36 @@
 
 ### Models (data-model.md)
 
-- [ ] T008 [P] Create `src/speckit_update/models/__init__.py` with exports
-- [ ] T009 [P] Implement FileState enum in `src/speckit_update/models/file_state.py`
-- [ ] T010 [P] Implement ConfidenceLevel enum in `src/speckit_update/models/file_state.py`
-- [ ] T011 [P] Implement TrackedFile dataclass in `src/speckit_update/models/manifest.py`
-- [ ] T012 [P] Implement BackupEntry dataclass in `src/speckit_update/models/backup.py`
-- [ ] T013 [P] Implement Manifest dataclass in `src/speckit_update/models/manifest.py`
-- [ ] T014 [P] Implement Release dataclass in `src/speckit_update/models/release.py`
-- [ ] T015 [P] Implement ConflictResult dataclass in `src/speckit_update/models/conflict.py`
-- [ ] T016 [P] Implement Fingerprint dataclass in `src/speckit_update/models/fingerprint.py`
-- [ ] T017 [P] Implement FingerprintMatch dataclass in `src/speckit_update/models/fingerprint.py`
-- [ ] T018 [P] Implement FileAnalysis dataclass in `src/speckit_update/models/file_analysis.py`
-- [ ] T019 [P] Implement UpdatePlan dataclass in `src/speckit_update/models/update_plan.py`
+- [x] T008 [P] Create `src/speckit_update/models/__init__.py` with exports
+- [x] T009 [P] Implement FileState enum in `src/speckit_update/models/file_state.py`
+- [x] T010 [P] Implement ConfidenceLevel enum in `src/speckit_update/models/file_state.py`
+- [x] T011 [P] Implement TrackedFile dataclass in `src/speckit_update/models/manifest.py`
+- [x] T012 [P] Implement BackupEntry dataclass in `src/speckit_update/models/backup.py`
+- [x] T013 [P] Implement Manifest dataclass in `src/speckit_update/models/manifest.py`
+- [x] T014 [P] Implement Release dataclass in `src/speckit_update/models/release.py`
+- [x] T015 [P] Implement ConflictResult dataclass in `src/speckit_update/models/conflict.py`
+- [x] T016 [P] Implement Fingerprint dataclass in `src/speckit_update/models/fingerprint.py`
+- [x] T017 [P] Implement FingerprintMatch dataclass in `src/speckit_update/models/fingerprint.py`
+- [x] T018 [P] Implement FileAnalysis dataclass in `src/speckit_update/models/file_analysis.py`
+- [x] T019 [P] Implement UpdatePlan dataclass in `src/speckit_update/models/update_plan.py`
 
 ### TypedDict Definitions (JSON Serialization)
 
-- [ ] T020 [P] Implement TrackedFileDict, BackupEntryDict, ManifestDict in `src/speckit_update/models/manifest.py`
+- [x] T020 [P] Implement TrackedFileDict, BackupEntryDict, ManifestDict in `src/speckit_update/models/manifest.py`
 
 ### Validation Utilities
 
-- [ ] T021 [P] Implement validate_path() in `src/speckit_update/utils/validation.py`
-- [ ] T022 [P] Implement validate_hash() in `src/speckit_update/utils/validation.py`
-- [ ] T023 [P] Implement validate_version() in `src/speckit_update/utils/validation.py`
+- [x] T021 [P] Implement validate_path() in `src/speckit_update/utils/validation.py`
+- [x] T022 [P] Implement validate_hash() in `src/speckit_update/utils/validation.py`
+- [x] T023 [P] Implement validate_version() in `src/speckit_update/utils/validation.py`
 
 ### Cross-Platform Path Utilities
 
-- [ ] T024 Implement normalize_path(), paths_equal() in `src/speckit_update/utils/paths.py`
+- [x] T024 Implement normalize_path(), paths_equal() in `src/speckit_update/utils/paths.py`
 
 ### Error Handling
 
-- [ ] T025 Implement exception hierarchy in `src/speckit_update/exceptions.py`:
+- [x] T025 Implement exception hierarchy in `src/speckit_update/exceptions.py`:
   - SpecKitError (exit_code=1)
   - PrerequisiteError (exit_code=2)
   - NetworkError (exit_code=3)
@@ -75,23 +75,23 @@
 
 ### Rich UI Foundation
 
-- [ ] T026 [P] Create shared Console instance in `src/speckit_update/ui/console.py`
-- [ ] T027 [P] Implement setup_logging() with RichHandler in `src/speckit_update/utils/logging.py`
+- [x] T026 [P] Create shared Console instance in `src/speckit_update/ui/console.py`
+- [x] T027 [P] Implement setup_logging() with RichHandler in `src/speckit_update/utils/logging.py`
 
 ### Package Entry Points
 
-- [ ] T028 Create `src/speckit_update/__init__.py` with version
-- [ ] T029 Create `src/speckit_update/__main__.py` for `python -m speckit_update`
-- [ ] T030 Create `src/speckit_update/services/__init__.py`
-- [ ] T031 Create `src/speckit_update/ui/__init__.py`
-- [ ] T032 Create `src/speckit_update/utils/__init__.py`
+- [x] T028 Create `src/speckit_update/__init__.py` with version
+- [x] T029 Create `src/speckit_update/__main__.py` for `python -m speckit_update`
+- [x] T030 Create `src/speckit_update/services/__init__.py`
+- [x] T031 Create `src/speckit_update/ui/__init__.py`
+- [x] T032 Create `src/speckit_update/utils/__init__.py`
 
 ### Foundational Tests
 
-- [ ] T033 [P] Create `tests/conftest.py` with shared fixtures (tmp_path, mock manifests)
-- [ ] T034 [P] Test FileState enum in `tests/unit/test_models.py`
-- [ ] T035 [P] Test validation functions in `tests/unit/test_validation.py`
-- [ ] T036 [P] Test path utilities in `tests/unit/test_paths.py`
+- [x] T033 [P] Create `tests/conftest.py` with shared fixtures (tmp_path, mock manifests)
+- [x] T034 [P] Test FileState enum in `tests/unit/test_models.py`
+- [x] T035 [P] Test validation functions in `tests/unit/test_validation.py`
+- [x] T036 [P] Test path utilities in `tests/unit/test_paths.py`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -107,52 +107,52 @@
 
 **NOTE: Write tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T037 [P] [US1] Unit test for hash_utils in `tests/unit/test_hash_utils.py`
+- [x] T037 [P] [US1] Unit test for hash_utils in `tests/unit/test_hash_utils.py`
 - [ ] T038 [P] [US1] Unit test for github_client in `tests/unit/test_github_client.py`
-- [ ] T039 [P] [US1] Unit test for manifest_manager in `tests/unit/test_manifest_manager.py`
-- [ ] T040 [P] [US1] Unit test for conflict_detector in `tests/unit/test_conflict_detector.py`
+- [x] T039 [P] [US1] Unit test for manifest_manager in `tests/unit/test_manifest_manager.py`
+- [x] T040 [P] [US1] Unit test for conflict_detector in `tests/unit/test_conflict_detector.py`
 - [ ] T041 [P] [US1] Integration test for check-only workflow in `tests/integration/test_check_only.py`
 
 ### Implementation for User Story 1
 
 #### Core Services (PowerShell → Python Migration)
 
-- [ ] T042 [US1] Implement get_normalized_hash() in `src/speckit_update/services/hash_utils.py`:
+- [x] T042 [US1] Implement get_normalized_hash() in `src/speckit_update/services/hash_utils.py`:
   - Remove BOM (0xFEFF)
   - Convert CRLF → LF
   - Strip trailing whitespace per line
   - Return sha256:{hex} format
-- [ ] T043 [US1] Implement GitHubClient class in `src/speckit_update/services/github_client.py`:
+- [x] T043 [US1] Implement GitHubClient class in `src/speckit_update/services/github_client.py`:
   - get_latest_release() → Release
   - get_release(version: str) → Release
   - download_tarball(url: str) → bytes
   - Rate limit handling with exponential backoff
   - GITHUB_TOKEN/GITHUB_PAT environment variable support
-- [ ] T044 [US1] Implement ManifestManager in `src/speckit_update/services/manifest_manager.py`:
+- [x] T044 [US1] Implement ManifestManager in `src/speckit_update/services/manifest_manager.py`:
   - load(path: Path) → Manifest | None
   - save(manifest: Manifest, path: Path) → None
   - JSON serialization with TypedDict
-- [ ] T045 [US1] Implement ConflictDetector in `src/speckit_update/services/conflict_detector.py`:
+- [x] T045 [US1] Implement ConflictDetector in `src/speckit_update/services/conflict_detector.py`:
   - analyze_file(tracked: TrackedFile, upstream_hash: str | None) → FileAnalysis
   - create_update_plan(manifest: Manifest, release: Release) → UpdatePlan
   - FileState determination logic per data-model.md flowchart
 
 #### Rich UI Components
 
-- [ ] T046 [P] [US1] Implement update plan table in `src/speckit_update/ui/tables.py`:
+- [x] T046 [P] [US1] Implement update plan table in `src/speckit_update/ui/tables.py`:
   - show_update_plan(plan: UpdatePlan) with columns: File, Status, Action
   - Color-coded actions: green (add), yellow (update), red (merge)
-- [ ] T047 [P] [US1] Implement progress bars in `src/speckit_update/ui/progress.py`:
+- [x] T047 [P] [US1] Implement progress bars in `src/speckit_update/ui/progress.py`:
   - download_with_progress(url: str) → bytes
   - SpinnerColumn for indeterminate operations
 
 #### CLI Implementation
 
-- [ ] T048 [US1] Implement CLI argument parsing in `src/speckit_update/cli.py`:
+- [x] T048 [US1] Implement CLI argument parsing in `src/speckit_update/cli.py`:
   - --check-only flag
   - --verbose flag
   - argparse with subcommands
-- [ ] T049 [US1] Implement check_only workflow in `src/speckit_update/cli.py`:
+- [x] T049 [US1] Implement check_only workflow in `src/speckit_update/cli.py`:
   - Load manifest
   - Fetch latest release
   - Analyze conflicts
@@ -161,7 +161,7 @@
 
 #### Data Files
 
-- [ ] T050 [US1] Copy `data/speckit-fingerprints.json` to `src/speckit_update/data/`
+- [x] T050 [US1] Copy `data/speckit-fingerprints.json` to `src/speckit_update/data/`
 
 **Checkpoint**: User Story 1 complete - `--check-only` works on all platforms
 
