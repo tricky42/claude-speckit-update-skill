@@ -11,6 +11,7 @@
 ### Session 2026-01-02
 
 - Q: How should GitHub authentication tokens be stored and accessed securely? → A: Environment variable only (`GITHUB_TOKEN` or `GITHUB_PAT`)
+- Q: What is the backward compatibility strategy for Windows PowerShell users? → A: Python fully replaces PowerShell; SKILL.md updated to invoke Python instead (users interact via `/speckit-update` command, not direct script calls)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -93,18 +94,18 @@ A developer wants to update to a specific SpecKit version rather than the latest
 
 ---
 
-### User Story 6 - Windows PowerShell Backward Compatibility (Priority: P3)
+### User Story 6 - Seamless Migration for Existing Users (Priority: P3)
 
-Existing Windows users with PowerShell workflows should continue to work without changes.
+Existing users on any platform should experience no change in their workflow when the implementation switches from PowerShell to Python.
 
-**Why this priority**: Must not break existing users - backward compatibility is essential for adoption.
+**Why this priority**: Migration must be invisible - users interact via `/speckit-update` command, not direct script invocation.
 
-**Independent Test**: Can be tested by running existing PowerShell commands on Windows and verifying identical behavior to current implementation.
+**Independent Test**: Can be tested by verifying `/speckit-update` command produces identical output and behavior after Python migration.
 
 **Acceptance Scenarios**:
 
-1. **Given** a Windows system with PowerShell 7+, **When** user runs existing PowerShell commands, **Then** behavior is identical to current implementation
-2. **Given** Python implementation is preferred, **When** user explicitly uses PowerShell wrapper, **Then** system delegates to PowerShell implementation with same results
+1. **Given** an existing user on Windows/macOS/Linux, **When** they run `/speckit-update` after migration, **Then** behavior and output are identical to previous implementation
+2. **Given** an existing manifest.json from PowerShell version, **When** Python implementation reads it, **Then** all data is preserved and updates work correctly
 
 ---
 
@@ -137,7 +138,7 @@ Existing Windows users with PowerShell workflows should continue to work without
 - **FR-010**: System MUST detect installed version via fingerprint matching for projects without manifest
 - **FR-011**: System MUST handle cross-platform path separators transparently
 - **FR-012**: System MUST preserve all custom user commands (never overwrite user-created files in `.claude/commands/`)
-- **FR-013**: System MUST maintain backward compatibility with existing PowerShell implementation on Windows
+- **FR-013**: System MUST fully replace PowerShell implementation; SKILL.md updated to invoke Python (no PowerShell wrapper or dual implementation)
 - **FR-014**: System MUST use modern Python typing throughout (TypedDict, dataclasses, Literal, Protocol)
 - **FR-015**: System MUST provide verbose logging mode for debugging (`--verbose`)
 
@@ -171,7 +172,7 @@ Existing Windows users with PowerShell workflows should continue to work without
 - **SC-005**: First-time users with existing installations experience zero manual conflicts for unmodified files
 - **SC-006**: All 193 existing test scenarios pass when migrated to pytest
 - **SC-007**: Type checker reports zero errors in strict mode
-- **SC-008**: Existing Windows PowerShell users experience no breaking changes
+- **SC-008**: Existing users on all platforms experience seamless migration (identical `/speckit-update` behavior)
 
 ## Assumptions
 
