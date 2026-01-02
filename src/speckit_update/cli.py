@@ -260,6 +260,39 @@ def _create_manifest_from_fingerprint(
     return manifest
 
 
+def _show_version_suggestions(client: GitHubClient, requested_version: str) -> None:
+    """Show available versions when requested version is not found.
+
+    Args:
+        client: GitHub client for fetching releases.
+        requested_version: The version that was not found.
+    """
+    error(f"Version '{requested_version}' not found.")
+
+    try:
+        with spinner("Fetching available versions..."):
+            releases = client.list_releases(per_page=10)
+
+        if releases:
+            console.print()
+            info("Available versions:")
+            for release in releases[:10]:
+                console.print(f"  • {release.tag_name}")
+
+            # Find similar versions (fuzzy match)
+            similar = [
+                r.tag_name for r in releases
+                if requested_version.lstrip("v") in r.tag_name
+                   or r.tag_name.lstrip("v").startswith(requested_version.lstrip("v")[:5])
+            ]
+            if similar:
+                console.print()
+                info(f"Did you mean: {', '.join(similar[:3])}?")
+    except NetworkError:
+        # If we can't fetch releases, just show the error
+        pass
+
+
 def run_update(
     project_root: Path,
     target_version: str | None = None,
@@ -301,10 +334,17 @@ def run_update(
         # Fetch target release and download tarball
         with GitHubClient() as client:
             with spinner("Fetching release information..."):
-                if target_version:
-                    release = client.get_release(target_version)
-                else:
-                    release = client.get_latest_release()
+                try:
+                    if target_version:
+                        release = client.get_release(target_version)
+                    else:
+                        release = client.get_latest_release()
+                except NetworkError as e:
+                    if target_version and "not found" in str(e).lower():
+                        # Show available versions as suggestions
+                        _show_version_suggestions(client, target_version)
+                        return 1
+                    raise
 
             target = release.tag_name
             info(f"Target version: {target}")

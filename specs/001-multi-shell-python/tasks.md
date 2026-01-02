@@ -294,9 +294,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T069 [US5] Add --version parameter to CLI in `src/speckit_update/cli.py`
-- [ ] T070 [US5] Implement get_release(version) call path in update workflow
-- [ ] T071 [US5] Handle non-existent version with suggestions (list available versions)
+- [x] T069 [US5] Add --target-version parameter to CLI in `src/speckit_update/cli.py`
+- [x] T070 [US5] Implement get_release(version) call path in update workflow
+- [x] T071 [US5] Handle non-existent version with suggestions (list available versions)
 
 **Checkpoint**: User Story 5 complete - version targeting works
 
