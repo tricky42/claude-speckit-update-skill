@@ -315,12 +315,12 @@
 
 ### Implementation for User Story 6
 
-- [ ] T074 [US6] Update SKILL.md to invoke Python:
+- [x] T074 [US6] Update SKILL.md to invoke Python:
   ```markdown
   ## Execution
   uv run speckit-update $ARGUMENTS
   ```
-- [ ] T075 [US6] Verify exit codes match PowerShell implementation (0-6)
+- [x] T075 [US6] Verify exit codes match PowerShell implementation (0-6)
 - [ ] T076 [US6] Test with real manifests from PowerShell version
 
 **Checkpoint**: User Story 6 complete - seamless migration verified

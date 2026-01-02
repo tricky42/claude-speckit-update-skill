@@ -8,44 +8,30 @@ This skill provides safe update capabilities for GitHub SpecKit installations, p
 
 When the user invokes `/speckit-updater`, you should:
 
-1. **Run the update orchestrator script** without any flags (conversational mode):
-   ```powershell
-   pwsh -NoProfile -Command "& 'C:\Users\bobby\.claude\skills\speckit-updater\scripts\update-wrapper.ps1'"
+1. **Run the update CLI** without any flags (check-only mode first):
+   ```bash
+   uv run speckit-update --check-only
    ```
 
-2. **Parse the output** for markers:
-   - **`[PROMPT_FOR_APPROVAL]`** - Update scenario (existing SpecKit installation)
-   - **`[PROMPT_FOR_INSTALL]`** - Fresh installation scenario (no .specify/ directory)
+2. **Parse the output** and present it to the user:
+   - Show current version vs. available version
+   - Show files that will be updated/added/removed
+   - Show any conflicts detected
+   - Show files that will be preserved (customized)
 
-3. **For Updates** (`[PROMPT_FOR_APPROVAL]` marker found):
-   - **Present the Markdown summary** showing:
-     - Current version vs. available version
-     - Files to update/add/remove
-     - Conflicts detected (if any)
-     - Files preserved (customized)
-     - Backup location
-     - Custom commands
-   - **Ask the user for approval** to proceed with the update
-   - **If approved**, re-run with `-Proceed` flag
-   - **If declined**, inform the user the update was cancelled
+3. **Ask the user for approval** to proceed with the update
 
-4. **For Fresh Installations** (`[PROMPT_FOR_INSTALL]` marker found):
-   - **Present a natural installation offer** to the user, such as:
-     - "SpecKit is not currently installed in this project. Would you like me to install it?"
-     - "I can install the latest SpecKit templates for you. This will create the .specify/ directory structure and download the templates from GitHub."
-   - **Do NOT mention the `-Proceed` flag** to the user (this is an implementation detail)
-   - **If user approves** (says "yes", "proceed", "install it", etc.), re-run with `-Proceed` flag
-   - **If user declines**, inform them the installation was cancelled
-
-5. **Execute approved action** by re-running with `-Proceed` flag:
-   ```powershell
-   pwsh -NoProfile -Command "& 'C:\Users\bobby\.claude\skills\speckit-updater\scripts\update-wrapper.ps1' -Proceed"
+4. **If approved**, run with `--proceed` flag:
+   ```bash
+   uv run speckit-update --proceed
    ```
+
+5. **If declined**, inform the user the update was cancelled
 
 **Special cases:**
-- If user requests `-CheckOnly`: run with that flag and show the report
-- If user requests `-Rollback`: run with that flag and confirm restoration
-- If user requests specific `-Version`: include that parameter
+- If user requests check-only: run with `--check-only` and show the report
+- If user requests rollback: run with `--rollback` and confirm restoration
+- If user requests specific version: include `--target-version` parameter
 
 ## Commands
 
@@ -54,97 +40,81 @@ When the user invokes `/speckit-updater`, you should:
 Updates SpecKit templates, commands, and scripts while preserving customizations.
 
 **Usage:**
-- `/speckit-updater` - Interactive update/install with conversational approval workflow (recommended for Claude Code)
-- `/speckit-updater -Proceed` - Proceed with update/install after approval (used by Claude after user confirms)
-- `/speckit-updater -CheckOnly` - Check for updates without applying
-- `/speckit-updater -Version v0.0.72` - Update to specific version
-- `/speckit-updater -Force` - Force overwrite SpecKit files (preserves custom commands)
-- `/speckit-updater -Rollback` - Restore from previous backup
-- `/speckit-updater -Auto` - DEPRECATED: Use conversational workflow instead (shows warning, maps to -Proceed)
-
-**Fresh Installation (No .specify/ directory):**
-- First invocation shows installation offer with `[PROMPT_FOR_INSTALL]` marker
-- Claude Code presents natural question to user (e.g., "Would you like me to install SpecKit?")
-- User approves via conversational response (e.g., "yes", "proceed", "install it")
-- Claude re-invokes with `-Proceed` flag automatically (implementation detail hidden from user)
-- Script creates `.specify/` structure, downloads templates, creates manifest
-- Exit code 0 throughout (awaiting approval is not an error)
-- Consistent with update flow: both use conversational approval workflow
+- `/speckit-updater` - Check for updates and show summary
+- `/speckit-updater --proceed` - Proceed with update after approval
+- `/speckit-updater --check-only` - Check for updates without applying (default)
+- `/speckit-updater --target-version v0.0.79` - Update to specific version
+- `/speckit-updater --rollback` - Restore from previous backup
+- `/speckit-updater --verbose` - Enable debug logging
 
 **Process:**
-1. Validates prerequisites (Git installed, clean Git state, write permissions)
+1. Validates prerequisites (Python 3.14+, .specify/ directory exists)
 2. Loads or creates manifest (.specify/manifest.json)
 3. Fetches target version from GitHub Releases API
 4. Compares file hashes to identify customizations
-5. Creates timestamped backup
+5. Creates timestamped backup before modifications
 6. Applies selective updates preserving customized files
-7. Opens VSCode merge editor for conflicts (Flow A: one at a time)
-8. Automatically invokes /speckit.constitution for constitution updates
-9. Updates manifest with new version
-10. Manages backup retention (keeps last 5)
+7. Performs intelligent 3-way merge for conflicts (section-level for markdown)
+8. Updates manifest with new version and hashes
+9. Manages backup retention (keeps last 5)
 
 **When you invoke this command, I will:**
-1. Execute the update-orchestrator.ps1 script
-2. Parse output for markers (`[PROMPT_FOR_APPROVAL]` for updates, `[PROMPT_FOR_INSTALL]` for fresh installations)
-3. **For updates**: Present Markdown summary of proposed changes
-4. **For installations**: Ask naturally if you want to install SpecKit (without mentioning `-Proceed` flag)
-5. Wait for your approval via chat conversation
-6. After approval: automatically re-invoke with `-Proceed` flag to execute
-7. Guide you through conflict resolution one file at a time (updates only)
-8. Open VSCode diff/merge tools as needed (updates only)
-9. Report results with detailed summary
+1. Execute the speckit-update CLI
+2. Present the update summary showing proposed changes
+3. Wait for your approval via chat conversation
+4. After approval: automatically run with `--proceed` flag to execute
+5. Guide you through any conflict markers that need resolution
+6. Report results with detailed summary
 
 **Conversational Workflow:** The skill uses a two-step approval process:
-- **Step 1**: Outputs summary → script exits → waits for approval
-- **Step 2**: After approval, Claude re-invokes with `-Proceed` → applies updates
+- **Step 1**: `--check-only` shows summary → waits for approval
+- **Step 2**: After approval, run with `--proceed` → applies updates
 
 **Requirements:**
-- Git installed and in PATH
+- Python 3.14+ installed
+- `uv` package manager installed
 - Internet connection for fetching updates from GitHub
 - Write permissions to .specify/ and .claude/ directories
-- Clean or staged Git working directory
-
-**The script is located at:** `{skill_path}/scripts/update-wrapper.ps1` (entry point) and `{skill_path}/scripts/update-orchestrator.ps1` (main logic)
 
 **Entry point command:**
-```powershell
-pwsh -NoProfile -Command "& '{skill_path}/scripts/update-wrapper.ps1' [parameters]"
+```bash
+uv run speckit-update [parameters]
 ```
-
-**Note:** Both PowerShell-style (`-CheckOnly`) and Linux-style (`--check-only`) flags are supported via the wrapper script.
 
 ## Features
 
 - **Customization Preservation**: Automatically detects and preserves user customizations using normalized file hashing
-- **Intelligent Conflict Resolution**: Guides through conflicts one-at-a-time with 4 options: merge editor, keep mine, use new, skip
+- **Intelligent 3-Way Merge**: Section-based merge for markdown files with 80% fuzzy matching for renamed sections
 - **Version Tracking**: Maintains `.specify/manifest.json` with file hashes, version info, and backup history
 - **Automatic Backups**: Creates timestamped backups in `.specify/backups/` with automatic retention management
 - **Fail-Fast with Rollback**: Automatically rolls back on any error, restoring pre-update state
 - **Dry-Run Mode**: `--check-only` shows exactly what would change without applying updates
-- **Constitution Integration**: Notifies when constitution template has updates (run `/speckit.constitution`)
-- **Custom Command Safety**: User-created commands never overwritten, even with `--force`
+- **First-Run Detection**: Automatically detects installed version via fingerprinting for new users
+- **Custom Command Safety**: User-created commands never overwritten
+- **Rich CLI Output**: Beautiful terminal output with progress bars, tables, and colored status messages
 
 ## Architecture
 
-### Modules
-- **HashUtils**: Normalized hashing (handles line endings, trailing whitespace, BOM)
-- **VSCodeIntegration**: Context detection, Quick Pick, diff/merge editor integration
-- **GitHubApiClient**: GitHub Releases API interaction (unauthenticated, 60 req/hour)
-- **ManifestManager**: Manifest CRUD operations with caching
-- **BackupManager**: Backup creation, restoration, and retention management
-- **ConflictDetector**: File state analysis and conflict detection
+### Python Modules (src/speckit_update/)
+- **hash_utils**: Normalized SHA-256 hashing (handles line endings, trailing whitespace, BOM)
+- **github_client**: GitHub Releases API with rate limit handling and retry logic
+- **manifest_manager**: Manifest CRUD operations with JSON serialization
+- **backup_manager**: Backup creation, restoration, and retention management
+- **conflict_detector**: File state analysis and update plan creation
+- **markdown_merger**: Intelligent 3-way merge with section-level conflict markers
+- **fingerprint_detector**: Automatic version detection via file fingerprinting
 
 ### Workflow
-1. Prerequisites validation (critical checks must pass, warnings allow continuation)
-2. Manifest loading/creation (safe default: assume all files customized if no manifest)
+1. Prerequisites validation (.specify/ directory exists)
+2. Manifest loading/creation (with automatic version detection for first-time users)
 3. GitHub API query for target version
 4. File state analysis (6 actions: add/remove/merge/preserve/update/skip)
-5. User confirmation with change preview
-6. Backup creation (timestamped, excludes backups directory)
-7. Selective file updates (fail-fast with automatic rollback)
-8. Conflict resolution (Flow A: one-at-a-time, VSCode merge editor)
+5. User confirmation with change preview (Rich tables)
+6. Backup creation (timestamped)
+7. Selective file updates with automatic rollback on error
+8. Conflict resolution (3-way merge with section-level markers)
 9. Manifest update (version, file hashes, customization flags)
-10. Backup cleanup (keep 5 most recent, requires confirmation)
+10. Backup cleanup (keep 5 most recent)
 11. Detailed summary display
 
 ## Exit Codes
