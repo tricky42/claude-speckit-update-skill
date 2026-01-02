@@ -12,6 +12,7 @@
 
 - Q: How should GitHub authentication tokens be stored and accessed securely? → A: Environment variable only (`GITHUB_TOKEN` or `GITHUB_PAT`)
 - Q: What is the backward compatibility strategy for Windows PowerShell users? → A: Python fully replaces PowerShell; SKILL.md updated to invoke Python instead (users interact via `/speckit-update` command, not direct script calls)
+- Q: How should cross-platform path case sensitivity be handled? → A: Case-preserving but case-insensitive comparison (consistent behavior across all platforms)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -136,7 +137,7 @@ Existing users on any platform should experience no change in their workflow whe
 - **FR-008**: System MUST create timestamped backups before any file modifications
 - **FR-009**: System MUST automatically roll back on errors during update process
 - **FR-010**: System MUST detect installed version via fingerprint matching for projects without manifest
-- **FR-011**: System MUST handle cross-platform path separators transparently
+- **FR-011**: System MUST handle cross-platform path separators transparently; paths are case-preserving but case-insensitive for comparison (consistent across all platforms)
 - **FR-012**: System MUST preserve all custom user commands (never overwrite user-created files in `.claude/commands/`)
 - **FR-013**: System MUST fully replace PowerShell implementation; SKILL.md updated to invoke Python (no PowerShell wrapper or dual implementation)
 - **FR-014**: System MUST use modern Python typing throughout (TypedDict, dataclasses, Literal, Protocol)
