@@ -47,6 +47,26 @@ Import-Module .\scripts\modules\ManifestManager.psm1 -Force
 Get-NormalizedHash -FilePath ".\README.md"
 ```
 
+### Python Development (Multi-Shell Support)
+
+**Note:** As of December 2025, Python 3.14.2 is the latest stable release and is available on all platforms (Linux, Windows, macOS). The Python implementation in `src/speckit_update/` requires Python >= 3.14.
+
+```bash
+# Install dependencies with uv
+uv sync --dev
+
+# Run Python unit tests (128 tests)
+uv run pytest tests/unit/ -v
+
+# Test the CLI
+uv run speckit-update --help
+uv run speckit-update --check-only --project /path/to/speckit/project
+
+# Type checking and linting
+uv run mypy src/speckit_update/
+uv run ruff check src/speckit_update/
+```
+
 ## Architecture
 
 ### Module vs. Helper Pattern
