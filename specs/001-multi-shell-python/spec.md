@@ -6,6 +6,12 @@
 **GitHub Issue**: #15 - Multi-Shell Support (macOS/Linux)
 **Input**: Rewrite the SpecKit Update Skill in modern Python (>= 3.14) with full type hints for cross-platform support
 
+## Clarifications
+
+### Session 2026-01-02
+
+- Q: How should GitHub authentication tokens be stored and accessed securely? → A: Environment variable only (`GITHUB_TOKEN` or `GITHUB_PAT`)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Cross-Platform Update Check (Priority: P1)
@@ -124,7 +130,7 @@ Existing Windows users with PowerShell workflows should continue to work without
 - **FR-003**: System MUST provide identical CLI interface to PowerShell version (`--check-only`, `--version`, `--rollback`, `--proceed`)
 - **FR-004**: System MUST read and write manifest.json with 100% schema compatibility
 - **FR-005**: System MUST detect customized files using normalized SHA-256 hashing (CRLF/LF normalization, BOM removal)
-- **FR-006**: System MUST fetch releases from GitHub API with rate limit handling
+- **FR-006**: System MUST fetch releases from GitHub API with rate limit handling; authentication via `GITHUB_TOKEN` or `GITHUB_PAT` environment variable (no other storage mechanisms)
 - **FR-007**: System MUST perform intelligent 3-way merge for markdown files with section-level conflict markers
 - **FR-008**: System MUST create timestamped backups before any file modifications
 - **FR-009**: System MUST automatically roll back on errors during update process
