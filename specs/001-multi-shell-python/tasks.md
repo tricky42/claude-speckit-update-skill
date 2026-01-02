@@ -207,7 +207,7 @@
 
 #### Update Workflow
 
-- [ ] T058 [US2] Implement --proceed workflow in `src/speckit_update/cli.py`:
+- [x] T058 [US2] Implement --proceed workflow in `src/speckit_update/cli.py`:
   - Create backup before modifications
   - Download and extract release tarball
   - Apply updates to non-customized files
@@ -217,7 +217,7 @@
 
 #### Auto-Rollback
 
-- [ ] T059 [US2] Implement automatic rollback on error in `src/speckit_update/cli.py`:
+- [x] T059 [US2] Implement automatic rollback on error in `src/speckit_update/cli.py`:
   - Wrap update in try/except
   - On error: restore from backup, revert manifest
   - Exit code 6 for rollback
