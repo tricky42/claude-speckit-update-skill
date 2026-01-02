@@ -18,13 +18,22 @@ from speckit_update.exceptions import (
     SpecKitError,
     UserCancelledError,
 )
-from speckit_update.models import BackupEntry, ConflictResult, TrackedFile, UpdatePlan
+from speckit_update.models import (
+    BackupEntry,
+    ConfidenceLevel,
+    ConflictResult,
+    Manifest,
+    TrackedFile,
+    UpdatePlan,
+)
 from speckit_update.services.backup_manager import BackupManager
 from speckit_update.services.conflict_detector import ConflictDetector
+from speckit_update.services.fingerprint_detector import FingerprintDetector
 from speckit_update.services.github_client import GitHubClient
+from speckit_update.services.hash_utils import calculate_file_hash
 from speckit_update.services.manifest_manager import ManifestManager
 from speckit_update.services.markdown_merger import MarkdownMerger
-from speckit_update.services.release_extractor import ReleaseExtractor
+from speckit_update.services.release_extractor import SPECKIT_FILES, ReleaseExtractor
 from speckit_update.ui.console import console, error, header, info, success, warning
 from speckit_update.ui.progress import OperationProgress, spinner
 from speckit_update.ui.prompts import (
@@ -32,6 +41,7 @@ from speckit_update.ui.prompts import (
     confirm_update,
     show_conflict_summary,
     show_no_manifest_warning,
+    show_version_detected,
 )
 from speckit_update.ui.tables import show_update_plan
 from speckit_update.utils.logging import setup_logging
@@ -168,6 +178,88 @@ def run_check_only(
     return 0
 
 
+def _create_manifest_from_fingerprint(
+    project_root: Path,
+    manifest_manager: ManifestManager,
+) -> Manifest | None:
+    """Create a new manifest using fingerprint detection.
+
+    Detects the installed SpecKit version via fingerprinting and
+    creates an initial manifest for tracking.
+
+    Args:
+        project_root: Path to project root.
+        manifest_manager: ManifestManager for saving.
+
+    Returns:
+        Created Manifest or None if detection failed.
+    """
+    with spinner("Detecting installed version..."):
+        detector = FingerprintDetector(project_root)
+        match = detector.detect_version()
+
+    # Show detection result
+    show_version_detected(
+        version=match.version or "unknown",
+        confidence=match.confidence.value,
+        method=match.method,
+    )
+
+    # Handle low confidence or no match
+    if match.confidence == ConfidenceLevel.LOW or not match.version:
+        warning(
+            "Low confidence detection. All files will be treated as potentially customized."
+        )
+        detected_version = "v0.0.0"
+        all_customized = True
+    else:
+        detected_version = match.version
+        all_customized = match.confidence != ConfidenceLevel.HIGH
+
+    # Build tracked files list
+    tracked_files: list[TrackedFile] = []
+
+    for file_path in SPECKIT_FILES:
+        full_path = project_root / file_path
+        if full_path.exists():
+            try:
+                file_hash = calculate_file_hash(full_path)
+                tracked_files.append(
+                    TrackedFile(
+                        path=file_path,
+                        original_hash=file_hash,
+                        customized=all_customized,
+                        is_official=True,
+                    )
+                )
+            except OSError:
+                continue
+
+    if not tracked_files:
+        error("No SpecKit files found in project.")
+        return None
+
+    # Create manifest
+    now = datetime.now()
+    manifest = Manifest(
+        version="1.0",
+        speckit_version=detected_version,
+        initialized_at=now,
+        last_updated=now,
+        agent="speckit-update-python",
+        speckit_commands=[f.path for f in tracked_files if "speckit." in f.path],
+        tracked_files=tracked_files,
+        custom_files=[],
+        backup_history=[],
+    )
+
+    # Save manifest
+    manifest_manager.save(manifest)
+    success(f"Created manifest with detected version: {detected_version}")
+
+    return manifest
+
+
 def run_update(
     project_root: Path,
     target_version: str | None = None,
@@ -191,9 +283,12 @@ def run_update(
 
     if manifest is None:
         show_no_manifest_warning()
-        # TODO: Implement fingerprint detection and manifest creation
-        warning("Manifest creation not yet implemented")
-        return 1
+
+        # First-run flow: detect version and create manifest
+        manifest = _create_manifest_from_fingerprint(project_root, manifest_manager)
+        if manifest is None:
+            error("Could not create manifest. Please check your SpecKit installation.")
+            return 1
 
     current_version = manifest.speckit_version
     info(f"Current version: {current_version}")

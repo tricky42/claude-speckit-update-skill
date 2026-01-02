@@ -244,7 +244,7 @@
   - detect_version_fast(project_root: Path) → FingerprintMatch | None (3 signature files)
   - detect_version_full(project_root: Path) → FingerprintMatch (12 files, fuzzy)
   - Confidence scoring: High (95-100%), Medium (70-94%), Low (<70%)
-- [ ] T063 [US3] Implement first-run flow in `src/speckit_update/cli.py`:
+- [x] T063 [US3] Implement first-run flow in `src/speckit_update/cli.py`:
   - Detect no manifest exists
   - Run fingerprint detection
   - Display confidence with Rich panel
@@ -268,11 +268,11 @@
 
 ### Implementation for User Story 4
 
-- [ ] T066 [US4] Implement restore_backup() in `src/speckit_update/services/backup_manager.py`:
+- [x] T066 [US4] Implement restore_backup() in `src/speckit_update/services/backup_manager.py`:
   - Find most recent backup from manifest.backup_history
   - Restore all files from backup directory
   - Revert manifest to pre-update state
-- [ ] T067 [US4] Implement --rollback CLI in `src/speckit_update/cli.py`:
+- [x] T067 [US4] Implement --rollback CLI in `src/speckit_update/cli.py`:
   - Check backups exist
   - Confirm with user
   - Execute restore
