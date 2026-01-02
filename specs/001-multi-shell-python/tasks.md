@@ -175,22 +175,22 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T051 [P] [US2] Unit test for backup_manager in `tests/unit/test_backup_manager.py`
-- [ ] T052 [P] [US2] Unit test for markdown_merger in `tests/unit/test_markdown_merger.py`
+- [x] T051 [P] [US2] Unit test for backup_manager in `tests/unit/test_backup_manager.py`
+- [x] T052 [P] [US2] Unit test for markdown_merger in `tests/unit/test_markdown_merger.py`
 - [ ] T053 [P] [US2] Integration test for update workflow in `tests/integration/test_update_workflow.py`
 
 ### Implementation for User Story 2
 
 #### Backup Service
 
-- [ ] T054 [US2] Implement BackupManager in `src/speckit_update/services/backup_manager.py`:
+- [x] T054 [US2] Implement BackupManager in `src/speckit_update/services/backup_manager.py`:
   - create_backup(manifest: Manifest) → BackupEntry
   - Timestamped directories in .specify/backups/
   - Retention management (keep 5 most recent)
 
 #### Markdown Merger (3-Way Merge)
 
-- [ ] T055 [US2] Implement MarkdownMerger in `src/speckit_update/services/markdown_merger.py`:
+- [x] T055 [US2] Implement MarkdownMerger in `src/speckit_update/services/markdown_merger.py`:
   - parse_sections(content: str) → list[Section]
   - match_sections_fuzzy(base: list, current: list, incoming: list) using Levenshtein
   - merge(base: str, current: str, incoming: str) → ConflictResult
@@ -199,10 +199,10 @@
 
 #### Rich UI for Updates
 
-- [ ] T056 [P] [US2] Implement confirmation prompts in `src/speckit_update/ui/prompts.py`:
+- [x] T056 [P] [US2] Implement confirmation prompts in `src/speckit_update/ui/prompts.py`:
   - confirm_update(plan: UpdatePlan) → bool
   - show_conflict_summary(results: list[ConflictResult])
-- [ ] T057 [P] [US2] Implement status messages in `src/speckit_update/ui/console.py`:
+- [x] T057 [P] [US2] Implement status messages in `src/speckit_update/ui/console.py`:
   - success(), warning(), error() with symbols ✓, ⚠, ✗
 
 #### Update Workflow
@@ -234,12 +234,12 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T060 [P] [US3] Unit test for fingerprint_detector in `tests/unit/test_fingerprint_detector.py`
+- [x] T060 [P] [US3] Unit test for fingerprint_detector in `tests/unit/test_fingerprint_detector.py`
 - [ ] T061 [P] [US3] Integration test for onboarding in `tests/integration/test_onboarding.py`
 
 ### Implementation for User Story 3
 
-- [ ] T062 [US3] Implement FingerprintDetector in `src/speckit_update/services/fingerprint_detector.py`:
+- [x] T062 [US3] Implement FingerprintDetector in `src/speckit_update/services/fingerprint_detector.py`:
   - load_fingerprints() → dict[str, Fingerprint] from bundled JSON
   - detect_version_fast(project_root: Path) → FingerprintMatch | None (3 signature files)
   - detect_version_full(project_root: Path) → FingerprintMatch (12 files, fuzzy)
