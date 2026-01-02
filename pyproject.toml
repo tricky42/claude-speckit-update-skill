@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Cross-platform SpecKit update skill for Claude Code"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 authors = [
     { name = "Claude Code", email = "claude@anthropic.com" }
 ]

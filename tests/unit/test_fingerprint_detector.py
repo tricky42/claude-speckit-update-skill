@@ -34,13 +34,13 @@ class TestFingerprintDetector:
         """Should find SpecKit files in project."""
         # Create some SpecKit files
         commands_dir = tmp_project / ".claude" / "commands"
-        commands_dir.mkdir(parents=True)
+        commands_dir.mkdir(parents=True, exist_ok=True)
         (commands_dir / "speckit.specify.md").write_text("# Specify")
         (commands_dir / "speckit.plan.md").write_text("# Plan")
         (commands_dir / "custom.md").write_text("# Custom")  # Not a speckit file
 
         memory_dir = tmp_project / ".specify" / "memory"
-        memory_dir.mkdir(parents=True)
+        memory_dir.mkdir(parents=True, exist_ok=True)
         (memory_dir / "constitution.md").write_text("# Constitution")
 
         detector = FingerprintDetector(tmp_project)
@@ -55,7 +55,7 @@ class TestFingerprintDetector:
         """Should return None when no signature match."""
         # Create files with random content
         commands_dir = tmp_project / ".claude" / "commands"
-        commands_dir.mkdir(parents=True)
+        commands_dir.mkdir(parents=True, exist_ok=True)
         (commands_dir / "speckit.specify.md").write_text("random content")
 
         detector = FingerprintDetector(tmp_project)

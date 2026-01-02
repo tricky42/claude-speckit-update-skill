@@ -161,7 +161,7 @@ class TestConvenienceFunctions:
 
     def test_create_backup_helper(self, tmp_project: Path) -> None:
         """create_backup should work like manager.create_backup()."""
-        (tmp_project / ".claude" / "commands").mkdir(parents=True)
+        (tmp_project / ".claude" / "commands").mkdir(parents=True, exist_ok=True)
         (tmp_project / ".claude" / "commands" / "test.md").write_text("test")
 
         manifest = Manifest(
